@@ -37,7 +37,7 @@ class BooleanType extends TypeDef {
 }
 class ArrayType extends TypeDef {
   public simplifiedTypeName = 'array';
-  private validTypes: TypeDef | Array<TypeDef>;
+  private validTypes: TypeDef | Array<TypeDef> | null = null;
   of(type: TypeDef | Array<TypeDef>): ArrayType {
     this.validTypes = type;
     return this;
@@ -69,9 +69,10 @@ class ArrayType extends TypeDef {
 
 interface Shape { [key: string]: TypeDef };
 
-function allKeysExist(shape: Shape, obj: object): boolean {
+function allKeysExist(shape: Shape, obj: InputValues): boolean {
   if (!shape) { return true; }
   return Object.keys(shape).reduce((memo: boolean, key: string) => {
+    if (!memo) { return memo; }
     if (shape[key].isRequired && !obj[key]) { return false; }
     if (shape[key] instanceof ObjectType) { return allKeysExist((shape[key] as ObjectType).shape, obj[key]); }
     if (obj[key]) { return true; }
@@ -80,7 +81,7 @@ function allKeysExist(shape: Shape, obj: object): boolean {
 }
 class ObjectType extends TypeDef {
   public simplifiedTypeName = 'object';
-  public shape: Shape;
+  public shape: Shape = ({} as Shape);
   private exact: boolean = false;
   constructor(exact: boolean = false) {
     super();
@@ -90,7 +91,7 @@ class ObjectType extends TypeDef {
     this.shape = type;
     return this;
   }
-  validFor(values: object): boolean {
+  validFor(values: InputValues): boolean {
     if (!this.isRequired && (values === null || values === undefined)) { return true; }
     if (!this.shape && values instanceof Object) { return true; }
 
@@ -124,8 +125,8 @@ export const Types = {
 };
 
 export type PropertyName = string;
-export type PropertySet = Record<PropertyName, TypeDef>;
-export type PropertyValues = Record<PropertyName, any>;
+export type InputSet = Record<PropertyName, TypeDef>;
+export type InputValues = Record<PropertyName, any>;
 
 export type ValidationError = {
   propertyName: 'string',
@@ -150,7 +151,7 @@ export class ValidationErrorSet extends Error {
   }
 }
 
-export function validatePropertyValues(propertySet: PropertySet, propertyValues: PropertyValues) {
+export function validatePropertyValues(propertySet: InputSet, propertyValues: InputValues) {
   const propertySetKeys: Array<string> = Object.keys(propertySet);
   const propertyValuesKeys: Array<string> = Object.keys(propertyValues);
 
@@ -213,26 +214,22 @@ export function validatePropertyValues(propertySet: PropertySet, propertyValues:
   }
 }
 
-export class CircuitDefinition {
+export class CodeTemplate {
   constructor(
-    public properties: PropertySet,
-    public template: (properties: PropertyValues) => any,
+    public properties: InputSet,
+    public template: (properties: InputValues) => any,
     public outputType: TypeDef,
   ){}
-  run(propertyValues: PropertyValues | object) {
-    validatePropertyValues(this.properties, propertyValues as PropertyValues);
-    return this.template(propertyValues as PropertyValues);
+  run(propertyValues: InputValues | object) {
+    validatePropertyValues(this.properties, propertyValues as InputValues);
+    return this.template(propertyValues as InputValues);
   }
 }
 
-export function createPropertySet(properties: object): PropertySet {
-  return properties as PropertySet;
+export function createInputDefinition(properties: object): InputSet {
+  return properties as InputSet;
 }
 
-export function createPropertyValues(properties: object): PropertySet {
-  return properties as PropertyValues;
-}
-
-export function createCircuitDefinition(properties: PropertySet | object, template: (properties: PropertyValues) => any, type: TypeDef): CircuitDefinition {
-  return new CircuitDefinition(properties as PropertySet, template, type);
+export function createCodeTemplate(inputProperties: InputSet | object, template: (properties: InputValues) => any, type: TypeDef): CodeTemplate {
+  return new CodeTemplate(inputProperties as InputSet, template, type);
 }

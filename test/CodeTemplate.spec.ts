@@ -1,12 +1,12 @@
 import { expect } from 'chai';
 
-import { createCircuitDefinition, createPropertySet, PropertyValues, Types } from '../src/CircuitDefinition';
+import { createCodeTemplate, createInputDefinition, InputValues, Types } from '../src/CodeTemplate';
 
-describe('runNode', function() {
+describe('CodeTemplate', function() {
   it('throws when extra properties are given', function() {
-    const definition = createCircuitDefinition(
-      createPropertySet({}),
-      (properties: PropertyValues) : string => {
+    const definition = createCodeTemplate(
+      createInputDefinition({}),
+      (properties: InputValues) : string => {
         return `hello world ${properties.test}`;
       },
       Types.string(),
@@ -19,11 +19,11 @@ describe('runNode', function() {
   });
 
   it('throws when null properties are given for non-nullables', function() {
-    const definition = createCircuitDefinition(
-      createPropertySet({
+    const definition = createCodeTemplate(
+      createInputDefinition({
         test: Types.string().required(),
       }),
-      (properties: PropertyValues) : string => {
+      (properties: InputValues) : string => {
         return `hello world ${properties.test}`;
       },
       Types.string(),
@@ -36,11 +36,11 @@ describe('runNode', function() {
   });
 
   it('throws when a nothing is given for a non-nullable property', function() {
-    const definition = createCircuitDefinition(
-      createPropertySet({
+    const definition = createCodeTemplate(
+      createInputDefinition({
         test: Types.string().required(),
       }),
-      (properties: PropertyValues) : string => {
+      (properties: InputValues) : string => {
         return `hello world ${properties.test}`;
       },
       Types.string(),
@@ -53,11 +53,11 @@ describe('runNode', function() {
   });
 
   it('throws when properties are not of a valid type', function() {
-    const definition = createCircuitDefinition(
-      createPropertySet({
+    const definition = createCodeTemplate(
+      createInputDefinition({
         test: Types.string(),
       }),
-      (properties: PropertyValues) : string => {
+      (properties: InputValues) : string => {
         return `hello world ${properties.test}`;
       },
       Types.string(),
@@ -70,11 +70,11 @@ describe('runNode', function() {
   });
 
   it('runs a node with properties injected', function() {
-    const definition = createCircuitDefinition(
-      createPropertySet({
+    const definition = createCodeTemplate(
+      createInputDefinition({
         test: Types.string().required(),
       }),
-      (properties: PropertyValues) : string => {
+      (properties: InputValues) : string => {
         return `hello world ${properties.test}`;
       },
       Types.string(),
@@ -83,13 +83,13 @@ describe('runNode', function() {
   });
 
   it('runs a node that has an array type', function() {
-    const definition = createCircuitDefinition(
-      createPropertySet({
+    const definition = createCodeTemplate(
+      createInputDefinition({
         test: Types.array().of(
           Types.string().required()
         ).required(),
       }),
-      (properties: PropertyValues) : string => {
+      (properties: InputValues) : string => {
         return `hello world ${properties.test.toString()}`;
       },
       Types.string(),
@@ -98,15 +98,15 @@ describe('runNode', function() {
   });
 
   it('throws when a node has a complex type that does not match', function() {
-    const definition = createCircuitDefinition(
-      createPropertySet({
+    const definition = createCodeTemplate(
+      createInputDefinition({
         test: Types.shape().of({
           hello: Types.shape().of({
             testing: Types.array().of(Types.string().required()).required(),
           }).required()
         }).required(),
       }),
-      (properties: PropertyValues) : string => {
+      (properties: InputValues) : string => {
         return `hello world ${properties.test.toString()}`;
       },
       Types.string(),
@@ -120,15 +120,15 @@ describe('runNode', function() {
   });
 
   it('does not throw when a node has a complex type that does match', function() {
-    const definition = createCircuitDefinition(
-      createPropertySet({
+    const definition = createCodeTemplate(
+      createInputDefinition({
         test: Types.shape().of({
           hello: Types.shape().of({
             testing: Types.array().of(Types.string().required()).required(),
           }).required()
         }).required(),
       }),
-      (properties: PropertyValues) : string => {
+      (properties: InputValues) : string => {
         return `hello world ${properties.test.toString()}`;
       },
       Types.string(),
