@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "lib": ["es5", "es6", "dom"],
+    "target": "es5",
+    "jsx": "react",
+    "jsxFactory": "h",
+    "strict": true,
+    "noUnusedLocals": true,
+    "declaration": true,
+    "declarationMap": true,
+    "noUnusedParameters": true
+  }
+}
